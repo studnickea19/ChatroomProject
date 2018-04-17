@@ -29,7 +29,6 @@ namespace Client
                 Send();
                 Recieve();
             }
-
         }
 
         public void Send()

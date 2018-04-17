@@ -33,6 +33,7 @@ namespace Server
                 AcceptClient();
                 string message = client.Recieve();
                 Respond(message);
+                //Use Task somewhere here
             }
         }
         private void AcceptClient()
@@ -42,10 +43,17 @@ namespace Server
             Console.WriteLine("Connected");
             NetworkStream stream = clientSocket.GetStream();
             client = new ServerClient(stream, clientSocket);
+            //Use task somewhere here
         }
         private void Respond(string body)
         {
              client.Send(body);
+        }
+        public string GetIPAddress()
+        {
+            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress ipAddress = ipHostInfo.AddressList[0];
+            return ipAddress.ToString();
         }
     }
 }
