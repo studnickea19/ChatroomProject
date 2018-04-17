@@ -15,10 +15,12 @@ namespace Server
         public static ServerClient client;
         TcpListener server;
         string defaultServerIP;
+        int defaultServerPort;
         public Server()
         {
             defaultServerIP = "127.0.0.1";
-            server = new TcpListener(IPAddress.Parse(defaultServerIP), 9999);
+            defaultServerPort = 9999;
+            server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
             server.Start();
         }
         public void Run()
