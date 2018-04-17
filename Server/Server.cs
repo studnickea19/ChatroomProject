@@ -16,18 +16,24 @@ namespace Server
         TcpListener server;
         string defaultServerIP;
         int defaultServerPort;
+        bool keepAlive;
+
         public Server()
         {
             defaultServerIP = "127.0.0.1";
             defaultServerPort = 9999;
+            keepAlive = true;
             server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
             server.Start();
         }
         public void Run()
         {
-            AcceptClient();
-            string message = client.Recieve();
-            Respond(message);
+            while (keepAlive == true)
+            {
+                AcceptClient();
+                string message = client.Recieve();
+                Respond(message);
+            }
         }
         private void AcceptClient()
         {
