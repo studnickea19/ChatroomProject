@@ -21,6 +21,7 @@ namespace Client
         public void Send()
         {
             string messageString = UI.GetInput();
+            Console.WriteLine("messageString", messageString.Length);
             byte[] message = Encoding.ASCII.GetBytes(messageString);
             stream.Write(message, 0, message.Count());
         }
