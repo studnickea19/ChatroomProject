@@ -20,7 +20,7 @@ namespace Server
 
         public Server()
         {
-            defaultServerIP = "127.0.0.1";
+            defaultServerIP = GetIPAddress();
             defaultServerPort = 9999;
             keepAlive = true;
             server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
