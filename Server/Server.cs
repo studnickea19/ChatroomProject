@@ -14,9 +14,11 @@ namespace Server
     {
         public static ServerClient client;
         TcpListener server;
+        string defaultServerIP;
         public Server()
         {
-            server = new TcpListener(IPAddress.Parse("127.0.0.1"), 9999);
+            defaultServerIP = "127.0.0.1";
+            server = new TcpListener(IPAddress.Parse(defaultServerIP), 9999);
             server.Start();
         }
         public void Run()
