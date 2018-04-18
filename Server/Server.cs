@@ -14,24 +14,56 @@ namespace Server
     {
         public static ServerClient client;
         TcpListener server;
+        string defaultServerIP;
+        int defaultServerPort;
+        bool keepAlive;
+        private string message;
+
         public Server()
         {
-            server = new TcpListener(IPAddress.Parse("127.0.0.1"), 9999);
+
+            defaultServerIP = "127.0.0.1";
+            defaultServerPort = 9999;
+            keepAlive = true;
+            server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
             server.Start();
         }
-        public void Run()
+
+        public async void Run()
         {
-            AcceptClient();
-            string message = client.Recieve();
-            Respond(message);
+           
+            while (keepAlive)
+            {
+
+                await AcceptClient();
+
+                await Task.Run(() => {
+                    string message = client.Recieve();
+                });
+
+                await Task.Run(() => {
+                    Respond(message);
+                });
+
+                //string message = client.Recieve();
+                //Respond(message);
+                
+                //Use Task somewhere here
+
+            }
         }
-        private void AcceptClient()
+
+        private Task AcceptClient()
         {
-            TcpClient clientSocket = default(TcpClient);
-            clientSocket = server.AcceptTcpClient();
-            Console.WriteLine("Connected");
-            NetworkStream stream = clientSocket.GetStream();
-            client = new ServerClient(stream, clientSocket);
+            return Task.Run(() =>
+            {
+                TcpClient clientSocket = default(TcpClient);
+                clientSocket = server.AcceptTcpClient();
+                Console.WriteLine("Connected");
+                NetworkStream stream = clientSocket.GetStream();
+                client = new ServerClient(stream, clientSocket);
+            });
+
         }
         private void Respond(string body)
         {

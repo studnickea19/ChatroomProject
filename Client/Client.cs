@@ -12,14 +12,30 @@ namespace Client
     {
         TcpClient clientSocket;
         NetworkStream stream;
+        bool keepAlive;
+        public string userName;
+
         public Client(string IP, int port)
         {
             clientSocket = new TcpClient();
-            clientSocket.Connect(IPAddress.Parse(IP), port);
+            clientSocket.Connect("127.0.0.1", port);
             stream = clientSocket.GetStream();
+            userName = GetUserName();
         }
-        public void Send()
+
+        public void Run()
         {
+            keepAlive = true;
+            while (keepAlive == true)
+            {
+                Send();
+                Recieve();
+              
+            }
+        }
+
+        public void Send()
+        { 
             string messageString = UI.GetInput();
             byte[] message = Encoding.ASCII.GetBytes(messageString);
             stream.Write(message, 0, message.Count());
@@ -29,6 +45,13 @@ namespace Client
             byte[] recievedMessage = new byte[256];
             stream.Read(recievedMessage, 0, recievedMessage.Length);
             UI.DisplayMessage(Encoding.ASCII.GetString(recievedMessage));
+        }
+
+        public string GetUserName()
+        {
+            UI.DisplayMessage("Please enter your name");
+            userName = UI.GetInput();
+            return userName;
         }
     }
 }
