@@ -31,6 +31,5 @@ namespace Server
             Console.WriteLine(recievedMessageString);
             return recievedMessageString;
         }
-
     }
 }

@@ -53,7 +53,7 @@ namespace Server
         {
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
-            return ipAddress.ToString();
+            return ipAddress.MapToIPv4().ToString();
         }
     }
 }
