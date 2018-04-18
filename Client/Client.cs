@@ -28,11 +28,12 @@ namespace Client
             {
                 Send();
                 Recieve();
+              
             }
         }
 
         public void Send()
-        {
+        { 
             string messageString = UI.GetInput();
             byte[] message = Encoding.ASCII.GetBytes(messageString);
             stream.Write(message, 0, message.Count());

@@ -20,7 +20,7 @@ namespace Server
 
         public Server()
         {
-            defaultServerIP = GetIPAddress();
+            defaultServerIP = IPAddress.Any.ToString();
             defaultServerPort = 9999;
             keepAlive = true;
             server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
@@ -48,12 +48,6 @@ namespace Server
         private void Respond(string body)
         {
              client.Send(body);
-        }
-        public string GetIPAddress()
-        {
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            return ipAddress.MapToIPv4().ToString();
         }
     }
 }
