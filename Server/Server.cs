@@ -17,33 +17,54 @@ namespace Server
         string defaultServerIP;
         int defaultServerPort;
         bool keepAlive;
+        private string message;
 
         public Server()
         {
-            defaultServerIP = GetIPAddress();
+            //defaultServerIP = GetIPAddress();
             defaultServerPort = 9999;
             keepAlive = true;
-            server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
+            server = new TcpListener(IPAddress.Parse("127.0.0.1"), defaultServerPort);
             server.Start();
         }
-        public void Run()
+
+        public async void Run()
         {
-            while (keepAlive == true)
+           
+            while (keepAlive)
             {
-                AcceptClient();
-                string message = client.Recieve();
-                Respond(message);
+
+                await AcceptClient();
+
+                await Task.Run(() => {
+                    string message = client.Recieve();
+                });
+
+                await Task.Run(() => {
+                    Respond(message);
+                });
+
+                
+                
+                //string message = client.Recieve();
+                //Respond(message);
+                
                 //Use Task somewhere here
+
             }
         }
-        private void AcceptClient()
+
+        private Task AcceptClient()
         {
-            TcpClient clientSocket = default(TcpClient);
-            clientSocket = server.AcceptTcpClient();
-            Console.WriteLine("Connected");
-            NetworkStream stream = clientSocket.GetStream();
-            client = new ServerClient(stream, clientSocket);
-            //Use task somewhere here
+            return Task.Run(() =>
+            {
+                TcpClient clientSocket = default(TcpClient);
+                clientSocket = server.AcceptTcpClient();
+                Console.WriteLine("Connected");
+                NetworkStream stream = clientSocket.GetStream();
+                client = new ServerClient(stream, clientSocket);
+            });
+
         }
         private void Respond(string body)
         {
