@@ -18,7 +18,6 @@ namespace Server
         int defaultServerPort;
         bool keepAlive;
         private string message;
-
         public Server()
         {
 
@@ -34,22 +33,15 @@ namespace Server
            
             while (keepAlive)
             {
-
-                await AcceptClient();
-
-                await Task.Run(() => {
-                    string message = client.Recieve();
-                });
-
-                await Task.Run(() => {
-                    Respond(message);
-                });
-
-                //string message = client.Recieve();
-                //Respond(message);
-                
                 //Use Task somewhere here
-
+                Parallel.Invoke(() =>
+                    {
+                        AcceptClient();
+                    },
+                    () =>
+                    {
+                        Respond(message);
+                    });
             }
         }
 
