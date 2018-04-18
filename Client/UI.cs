@@ -14,8 +14,7 @@ namespace Client
         }
         public static string GetInput()
         {
-            string userInput = Console.ReadLine();
-            return userInput;
+            return Console.ReadLine();
         }
     }
 }

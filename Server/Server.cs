@@ -22,7 +22,7 @@ namespace Server
         public Server()
         {
 
-            defaultServerIP = IPAddress.Any.ToString();
+            defaultServerIP = "127.0.0.1";
             defaultServerPort = 9999;
             keepAlive = true;
             server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
@@ -45,8 +45,6 @@ namespace Server
                     Respond(message);
                 });
 
-                
-                
                 //string message = client.Recieve();
                 //Respond(message);
                 
