@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Client
 {
@@ -20,7 +21,7 @@ namespace Client
             clientSocket = new TcpClient();
             clientSocket.Connect("127.0.0.1", port);
             stream = clientSocket.GetStream();
-            userName = GetUserName();
+            GetUserName();
         }
 
         public void Run()
@@ -30,7 +31,6 @@ namespace Client
             {
                 Send();
                 Recieve();
-              
             }
         }
 
@@ -47,11 +47,13 @@ namespace Client
             UI.DisplayMessage(Encoding.ASCII.GetString(recievedMessage));
         }
 
-        public string GetUserName()
-        {
+        public void GetUserName()
+         {
             UI.DisplayMessage("Please enter your name");
             userName = UI.GetInput();
-            return userName;
+            byte[] stringName = Encoding.ASCII.GetBytes(userName);
+            stream.Write(stringName, 0, userName.Count());
         }
     }
 }
+

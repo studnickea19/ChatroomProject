@@ -9,13 +9,28 @@ namespace Server
     class Message
     {
         public ServerClient sender;
-        public string Body;
-        public string UserId;
+        private string body;
+        public string UserName;
         public Message(ServerClient Sender, string Body)
         {
             sender = Sender;
-            this.Body = Body;
-            UserId = sender?.UserId;
+            this.body = body;
+            UserName = sender.userName;
         }
+
+        public string Body
+        {
+            get { return body; }
+            set
+            {
+                if (body != value)
+                {
+                    Body = value;
+                    
+                }
+            }
+        }
+
+      
     }
 }

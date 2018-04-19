@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Server
 {
@@ -17,7 +18,7 @@ namespace Server
         string defaultServerIP;
         int defaultServerPort;
         bool keepAlive;
-        private string message;
+        public Dictionary<string, ServerClient> userDictionary;
         public Server()
         {
 
@@ -26,40 +27,60 @@ namespace Server
             keepAlive = true;
             server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
             server.Start();
+            userDictionary = new Dictionary<string, ServerClient>();
         }
 
         public async void Run()
         {
-           
             while (keepAlive)
             {
-                //Use Task somewhere here
-                Parallel.Invoke(() =>
-                    {
-                        AcceptClient();
-                    },
-                    () =>
-                    {
-                        Respond(message);
-                    });
+                Console.WriteLine("Creating Client");
+                await AcceptClient();
+                Console.WriteLine("Waiting for message");
+                string message = client.Recieve();
+                await Respond(message);
+                Console.WriteLine("Message printed");                                  
             }
         }
 
         private Task AcceptClient()
         {
-            return Task.Run(() =>
-            {
-                TcpClient clientSocket = default(TcpClient);
-                clientSocket = server.AcceptTcpClient();
-                Console.WriteLine("Connected");
-                NetworkStream stream = clientSocket.GetStream();
-                client = new ServerClient(stream, clientSocket);
-            });
-
+                return Task.Factory.StartNew(() =>
+                {
+                    TcpClient clientSocket = default(TcpClient);
+                    clientSocket = server.AcceptTcpClient();
+                    Console.WriteLine("Connected");
+                    NetworkStream stream = clientSocket.GetStream();                   
+                    client = new ServerClient(stream, clientSocket);
+                    AddUser(client);
+                    
+                });
         }
-        private void Respond(string body)
+        private Task Respond(string body)
         {
-             client.Send(body);
+            return Task.Factory.StartNew(() =>
+            {
+                client.Send(body);
+            });
         }
+
+        public void AddUser(ServerClient client)
+        {
+            string userName = client.Recieve();
+            userDictionary.Add(userName, client);
+            client.Send(userName + "has joined the chatroom");
+        }
+
+
+        //Parallel.Invoke(() =>
+          //  {
+            //    AcceptClient();
+            //},
+            //()  =>
+            //{
+
+            //string message = client.Recieve();
+            //Respond(Message);
+        //});
     }
 }

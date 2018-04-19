@@ -7,16 +7,25 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class ServerClient
+    class ServerClient //: ISubscribable
     {
         NetworkStream stream;
         TcpClient client;
-        public string UserId;
+        public string userName;
+
+        public NetworkStream Stream
+        {
+            get { return stream; }
+        }
+
+        public string UserName
+        {
+           set { userName = value; }   
+        }
         public ServerClient(NetworkStream Stream, TcpClient Client)
         {
             stream = Stream;
             client = Client;
-            UserId = "495933b6-1762-47a1-b655-483510072e73";
         }
         public void Send(string Message)
         {
