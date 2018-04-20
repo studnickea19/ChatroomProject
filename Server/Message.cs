@@ -14,7 +14,7 @@ namespace Server
         public Message(ServerClient Sender, string Body)
         {
             sender = Sender;
-            this.body = sender.userName + ": " + body;
+            this.body = sender.userName + ": " + Body;
             UserName = sender.userName;
         }
 

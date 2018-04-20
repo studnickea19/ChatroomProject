@@ -42,18 +42,15 @@ namespace Server
             {
                 Parallel.Invoke(() =>
                 {
-                    Console.WriteLine("Listening for Client");
                     Task.Run(() => AcceptClient());
                 },
-                () =>
-                {                    
-                    Console.WriteLine("Waiting for message");           
-                    Task.Run(() => Listen());
-                },
+                //() =>
+                //{                           
+                //    Task.Run(() => Listen());
+                //},
                 () =>
                 {
-                    Respond();
-                    Console.WriteLine("Message printed");
+                    Task.Run(() => Respond());
                 });
                     
                                   
@@ -72,6 +69,7 @@ namespace Server
                     NetworkStream stream = clientSocket.GetStream();
                     client = new ServerClient(stream, clientSocket);
                     AddUser(client);
+                    Listen();
                 }
 
                 catch(Exception e)
@@ -85,24 +83,23 @@ namespace Server
         }
         private void Respond()
         {
-            try
-            {
-                Message message = chatroom.Dequeue();
-                lock (messageThread)
+                try
                 {
-                    foreach (KeyValuePair<string, ServerClient> entry in userDictionary)
+                    Message message = chatroom.Dequeue();
+                    lock (messageThread)
                     {
-                        client.Send(message.Body);
+                        foreach (KeyValuePair<string, ServerClient> entry in userDictionary)
+                        {
+                            entry.Value.Send(message.Body);
+                        }
                     }
-                }           
-                
-            }
 
-            catch(Exception e)
-            {
-                Console.WriteLine("No messages yet.");
-            }
-            
+                }
+
+                catch (Exception e)
+                {
+                    Console.WriteLine("No messages yet.");
+                } 
         }
 
         public void AddUser(ServerClient client)
@@ -130,10 +127,7 @@ namespace Server
                     {
                         string messageString = client.Recieve();
                         Message message = new Message(client, messageString);
-                        foreach (KeyValuePair<string, ServerClient> entry in userDictionary)
-                        {
-                            chatroom.Enqueue(message);
-                        }
+                        chatroom.Enqueue(message);
                     }
                 }
                 catch (Exception e)
