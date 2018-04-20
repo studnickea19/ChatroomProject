@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    interface ISubscriber
+    public interface ISubscriber
     {
+        void WriteMessage(string message);
     }
 }

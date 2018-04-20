@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class Program
+    public class Writer :ISubscriber
     {
-        static void Main(string[] args)
+        public void WriteMessage(string message)
         {
-            Writer writer = new Writer();
-            new Server(writer).Run();
-            Console.ReadLine();
+            Console.WriteLine("message recieved");
         }
     }
 }

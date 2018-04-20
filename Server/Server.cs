@@ -19,29 +19,44 @@ namespace Server
         int defaultServerPort;
         bool keepAlive;
         public Dictionary<string, ServerClient> userDictionary;
-        Queue<Message> chatroom = new Queue<Message>();
+        Queue<Message> chatroom;
+        private Object messageThread = new Object();
+        ISubscriber subscriber;
         
-        public Server()
+        public Server(ISubscriber subscriber)
         {
 
             defaultServerIP = "127.0.0.1";
             defaultServerPort = 9999;
             keepAlive = true;
             server = new TcpListener(IPAddress.Parse(defaultServerIP), defaultServerPort);
-            server.Start();
+            chatroom = new Queue<Message>();
             userDictionary = new Dictionary<string, ServerClient>();
+            this.subscriber = subscriber;
+            server.Start();
         }
 
-        public async void Run()
+        public void Run()
         {
             while (keepAlive)
             {
-                Console.WriteLine("Creating Client");
-                AcceptClient();
-                Console.WriteLine("Waiting for message");
-                string message = client.Recieve();
-                await Respond(message);
-                Console.WriteLine("Message printed");                                  
+                Parallel.Invoke(() =>
+                {
+                    Console.WriteLine("Listening for Client");
+                    Task.Run(() => AcceptClient());
+                },
+                () =>
+                {                    
+                    Console.WriteLine("Waiting for message");           
+                    Task.Run(() => Listen());
+                },
+                () =>
+                {
+                    Respond();
+                    Console.WriteLine("Message printed");
+                });
+                    
+                                  
             }
         }
 
@@ -49,42 +64,84 @@ namespace Server
         {
             while(true)
             {
-                TcpClient clientSocket = default(TcpClient);
-                clientSocket = server.AcceptTcpClient();
-                Console.WriteLine("Connected");
-                NetworkStream stream = clientSocket.GetStream();
-                client = new ServerClient(stream, clientSocket);
-                AddUser(client);
+                try
+                {
+                    TcpClient clientSocket = default(TcpClient);
+                    clientSocket = server.AcceptTcpClient();
+                    Console.WriteLine("Connected");
+                    NetworkStream stream = clientSocket.GetStream();
+                    client = new ServerClient(stream, clientSocket);
+                    AddUser(client);
+                }
+
+                catch(Exception e)
+                {
+                    string message = "No client yet";
+                    subscriber.WriteMessage(message);
+                }
+                
             }
             
         }
-        private Task Respond(string body)
+        private void Respond()
         {
-            return Task.Factory.StartNew(() =>
+            try
             {
-                client.Send(body);
-            });
+                Message message = chatroom.Dequeue();
+                lock (messageThread)
+                {
+                    foreach (KeyValuePair<string, ServerClient> entry in userDictionary)
+                    {
+                        client.Send(message.Body);
+                    }
+                }           
+                
+            }
+
+            catch(Exception e)
+            {
+                Console.WriteLine("No messages yet.");
+            }
+            
         }
 
         public void AddUser(ServerClient client)
         {
-            client.userName = client.Recieve();
-            string joinNotice = client.userName + "has joined the chatroom";
+            string userName = client.Recieve();
+            client.userName = userName.Trim('\0');
+            string joinNotice = client.userName + " has joined the chatroom";
             userDictionary.Add(client.userName, client);
             Message message = new Message(client, joinNotice);
             chatroom.Enqueue(message);
         }
 
-
-        //Parallel.Invoke(() =>
-          //  {
-            //    AcceptClient();
-            //},
-            //()  =>
-            //{
-
-            //string message = client.Recieve();
-            //Respond(Message);
-        //});
+        public void Listen()
+        {
+            if (userDictionary.Count == 0)
+            {
+                Task waitForClient = Task.Run(() => AcceptClient());
+                waitForClient.Wait();
+            }
+            else
+            {
+                try
+                {
+                    while (true)
+                    {
+                        string messageString = client.Recieve();
+                        Message message = new Message(client, messageString);
+                        foreach (KeyValuePair<string, ServerClient> entry in userDictionary)
+                        {
+                            chatroom.Enqueue(message);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("No messages");
+                }
+            }
+            
+        }
     }
 }
