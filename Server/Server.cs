@@ -19,6 +19,8 @@ namespace Server
         int defaultServerPort;
         bool keepAlive;
         public Dictionary<string, ServerClient> userDictionary;
+        Queue<Message> chatroom = new Queue<Message>();
+        
         public Server()
         {
 
@@ -35,7 +37,7 @@ namespace Server
             while (keepAlive)
             {
                 Console.WriteLine("Creating Client");
-                await AcceptClient();
+                AcceptClient();
                 Console.WriteLine("Waiting for message");
                 string message = client.Recieve();
                 await Respond(message);
@@ -43,18 +45,18 @@ namespace Server
             }
         }
 
-        private Task AcceptClient()
+        private void AcceptClient()
         {
-                return Task.Factory.StartNew(() =>
-                {
-                    TcpClient clientSocket = default(TcpClient);
-                    clientSocket = server.AcceptTcpClient();
-                    Console.WriteLine("Connected");
-                    NetworkStream stream = clientSocket.GetStream();                   
-                    client = new ServerClient(stream, clientSocket);
-                    AddUser(client);
-                    
-                });
+            while(true)
+            {
+                TcpClient clientSocket = default(TcpClient);
+                clientSocket = server.AcceptTcpClient();
+                Console.WriteLine("Connected");
+                NetworkStream stream = clientSocket.GetStream();
+                client = new ServerClient(stream, clientSocket);
+                AddUser(client);
+            }
+            
         }
         private Task Respond(string body)
         {
@@ -66,9 +68,11 @@ namespace Server
 
         public void AddUser(ServerClient client)
         {
-            string userName = client.Recieve();
-            userDictionary.Add(userName, client);
-            client.Send(userName + "has joined the chatroom");
+            client.userName = client.Recieve();
+            string joinNotice = client.userName + "has joined the chatroom";
+            userDictionary.Add(client.userName, client);
+            Message message = new Message(client, joinNotice);
+            chatroom.Enqueue(message);
         }
 
 
